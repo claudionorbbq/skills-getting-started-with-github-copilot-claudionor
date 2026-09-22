@@ -38,6 +38,42 @@ activities = {
         "schedule": "Mondays, Wednesdays, Fridays, 2:00 PM - 3:00 PM",
         "max_participants": 30,
         "participants": ["john@mergington.edu", "olivia@mergington.edu"]
+    },
+    "Soccer Team": {
+        "description": "Practice teamwork and compete in local soccer matches",
+        "schedule": "Wednesdays and Fridays, 4:00 PM - 5:30 PM",
+        "max_participants": 18,
+        "participants": ["alex@mergington.edu", "mia@mergington.edu"]
+    },
+    "Basketball Club": {
+        "description": "Improve shooting, dribbling, and game strategy on the court",
+        "schedule": "Tuesdays and Thursdays, 4:00 PM - 5:30 PM",
+        "max_participants": 15,
+        "participants": ["noah@mergington.edu", "ava@mergington.edu"]
+    },
+    "Drama Club": {
+        "description": "Explore acting, stage performance, and dramatic storytelling",
+        "schedule": "Mondays, 3:30 PM - 5:00 PM",
+        "max_participants": 20,
+        "participants": ["grace@mergington.edu", "liam@mergington.edu"]
+    },
+    "Art Studio": {
+        "description": "Create paintings, sketches, and mixed-media projects",
+        "schedule": "Thursdays, 3:30 PM - 5:00 PM",
+        "max_participants": 16,
+        "participants": ["ella@mergington.edu", "lucas@mergington.edu"]
+    },
+    "Debate Team": {
+        "description": "Develop public speaking, argumentation, and critical thinking skills",
+        "schedule": "Tuesdays, 3:30 PM - 5:00 PM",
+        "max_participants": 10,
+        "participants": ["charlotte@mergington.edu", "henry@mergington.edu"]
+    },
+    "Science Olympiad": {
+        "description": "Solve challenging science problems and prepare for competitions",
+        "schedule": "Fridays, 2:00 PM - 3:30 PM",
+        "max_participants": 14,
+        "participants": ["zoe@mergington.edu", "jack@mergington.edu"]
     }
 }
 
@@ -59,8 +95,27 @@ def signup_for_activity(activity_name: str, email: str):
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
 
+    # Validate email input
+    email = (email or "").strip()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Valid email is required")
+
+    normalized_email = email.lower()
+
     # Get the specific activity
     activity = activities[activity_name]
+
+    # Prevent duplicate registration for the same activity, case-insensitive
+    participant_emails = {participant.lower() for participant in activity["participants"]}
+    if normalized_email in participant_emails:
+        raise HTTPException(
+            status_code=400,
+            detail="Student already signed up for this activity"
+        )
+
+    # Prevent overbooking the activity
+    if len(activity["participants"]) >= activity["max_participants"]:
+        raise HTTPException(status_code=400, detail="Activity is full")
 
     # Add student
     activity["participants"].append(email)
